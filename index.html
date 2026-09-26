@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BioTest — тесты по биологии</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:#f4f7fb;color:#172033}
+button{font:inherit}
+header{background:linear-gradient(135deg,#173b6c,#2d76c7);color:white;padding:24px 20px}
+.header{max-width:1050px;margin:auto;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:25px;font-weight:800}.logo span{opacity:.7}
+.container{max-width:1050px;margin:28px auto;padding:0 18px}
+.card{background:white;border-radius:20px;padding:25px;box-shadow:0 8px 30px #1c315010;margin-bottom:20px}
+h1,h2,h3{margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.topic{padding:22px;border:1px solid #e3e9f2;border-radius:16px;background:#fff;cursor:pointer;text-align:left;transition:.2s}
+.topic:hover{transform:translateY(-2px);box-shadow:0 8px 20px #1c315015}
+.topic b{display:block;font-size:18px;margin-bottom:8px}.muted{color:#68758a}
+.primary{border:0;border-radius:12px;background:#2168c4;color:white;padding:13px 20px;cursor:pointer;font-weight:700}
+.secondary{border:1px solid #d8e0eb;background:white;border-radius:12px;padding:12px 18px;cursor:pointer}
+.topline{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:20px}
+.progress{height:9px;background:#e8edf4;border-radius:99px;overflow:hidden}.bar{height:100%;background:#2d76c7;transition:.3s}
+.question{font-size:21px;font-weight:700;line-height:1.4;margin:25px 0}
+.option{display:block;width:100%;padding:15px;text-align:left;border:1px solid #dce3ed;background:white;border-radius:12px;margin:10px 0;cursor:pointer}
+.option.selected{border-color:#2d76c7;background:#edf5ff}
+.option.correct{border-color:#36a269;background:#eaf8f0}.option.wrong{border-color:#dc5b64;background:#fff0f1}
+.actions{display:flex;justify-content:space-between;margin-top:22px;gap:10px}
+.timer{font-weight:800;background:#fff1f1;color:#b33b43;padding:9px 13px;border-radius:10px}
+.result{text-align:center}.score{font-size:58px;font-weight:900;color:#2168c4}
+.review{margin-top:20px}.review-item{padding:16px;border-radius:14px;background:#f7f9fc;margin:10px 0}
+.hidden{display:none!important}
+.badge{display:inline-block;background:#edf5ff;color:#2168c4;border-radius:99px;padding:6px 10px;font-size:13px;font-weight:700}
+footer{text-align:center;color:#8792a4;padding:25px}
+@media(max-width:600px){.header{align-items:flex-start}.topline{align-items:flex-start}.question{font-size:18px}.card{padding:18px}}
+</style>
+</head>
+<body>
+<header><div class="header"><div class="logo">Bio<span>Test</span></div><div>Биология • тесты</div></div></header>
+
+<main class="container">
+<section id="home">
+  <div class="card">
+    <span class="badge">Для школьников</span>
+    <h1>Изучай. Повторяй. Проверяй себя.</h1>
+    <p class="muted">Сначала изучи краткую теорию, затем пройди тест и сразу получи результат.</p>
+  </div>
+  <div class="grid" id="topics"></div>
+</section>
+
+<section id="quiz" class="hidden">
+  <div class="card">
+    <div class="topline">
+      <div><b id="quizTitle"></b><div class="muted" id="counter"></div></div>
+      <div class="timer" id="timer">10:00</div>
+    </div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="question" id="question"></div>
+    <div id="options"></div>
+    <div class="actions">
+      <button class="secondary" id="prev">Назад</button>
+      <button class="primary" id="next">Далее</button>
+    </div>
+  </div>
+</section>
+
+<section id="result" class="hidden">
+  <div class="card result">
+    <span class="badge">Тест завершён</span>
+    <h1 id="resultTitle"></h1>
+    <div class="score" id="score"></div>
+    <p id="resultText" class="muted"></p>
+    <button class="primary" onclick="restart()">Пройти ещё раз</button>
+    <button class="secondary" onclick="goHome()">Выбрать другой тест</button>
+  </div>
+  <div class="card review">
+    <h2>Разбор ответов</h2>
+    <div id="review"></div>
+  </div>
+</section>
+</main>
+<footer>BioTest • учебный проект</footer>
+
+<script>
+const tests = {
+ "Клетка": [
+  ["Какая органелла отвечает за синтез белка?",["Рибосома","Лизосома","Вакуоль","Центриоль"],0],
+  ["Где находится основная часть ДНК эукариотической клетки?",["В ядре","В рибосомах","В лизосомах","В клеточной стенке"],0],
+  ["Какой органоид называют «энергетической станцией» клетки?",["Митохондрия","Комплекс Гольджи","Ядрышко","Вакуоль"],0],
+  ["Что происходит во время митоза?",["Образуются две генетически близкие дочерние клетки","Образуются четыре гаплоидные клетки","Происходит только репликация ДНК","Синтезируются белки"],0],
+  ["Какой компонент отсутствует у животных клеток?",["Клеточная стенка","Митохондрии","Рибосомы","Клеточная мембрана"],0]
+ ],
+ "Митоз и мейоз": [
+  ["Сколько дочерних клеток образуется после мейоза?",["2","3","4","8"],2],
+  ["Какой набор хромосом обычно имеют гаметы человека?",["2n","n","3n","4n"],1],
+  ["В какой фазе митоза сестринские хроматиды расходятся к полюсам?",["Профаза","Метафаза","Анафаза","Телофаза"],2],
+  ["Кроссинговер происходит во время:",["Профазы I мейоза","Метафазы II","Анафазы митоза","Телофазы II"],0],
+  ["Результатом митоза из одной диплоидной клетки являются:",["Две диплоидные клетки","Четыре диплоидные клетки","Две гаплоидные клетки","Четыре гаплоидные клетки"],0]
+ ],
+ "Размножение организмов": [
+  ["Какое размножение происходит без участия гамет?",["Бесполое","Половое","Двойное оплодотворение","Партеногенез всегда"],0],
+  ["Что является результатом слияния мужской и женской гамет?",["Зигота","Спора","Гаметофит","Хроматида"],0],
+  ["Как называется развитие организма из неоплодотворённой яйцеклетки?",["Партеногенез","Фрагментация","Конъюгация","Почкование"],0],
+  ["Какой процесс увеличивает генетическое разнообразие при половом размножении?",["Комбинация генетического материала родителей","Удвоение числа клеток","Рост организма","Синтез АТФ"],0],
+  ["Почкование относится к:",["Бесполому размножению","Половому размножению","Мейозу","Оплодотворению"],0]
+ ]
+};
+
+let currentTest=[], currentName="", answers=[], index=0, time=600, interval=null;
+
+const topics=document.getElementById("topics");
+Object.keys(tests).forEach(name=>{
+ const div=document.createElement("button"); div.className="topic";
+ div.innerHTML=`<b>${name}</b><span class="muted">Теория + тест • ${tests[name].length} вопросов</span>`;
+ div.onclick=()=>openModule(name); topics.appendChild(div);
+});
+
+const theory = {
+ "Клетка": {
+  intro:"Клетка — структурно-функциональная единица живых организмов. Все клетки имеют плазматическую мембрану, цитоплазму, генетический материал и рибосомы.",
+  sections:[
+   ["Основные положения клеточной теории","Клетка является основной единицей строения и жизнедеятельности организмов. Новые клетки возникают из уже существующих клеток. Клетки разных организмов имеют общие принципы строения и обмена веществ."],
+   ["Прокариоты и эукариоты","Прокариоты не имеют оформленного ядра; их ДНК расположена в нуклеоиде. Эукариотические клетки имеют ядро и мембранные органоиды. К бактериям относятся прокариоты, а растения, животные и грибы — эукариоты."],
+   ["Органоиды клетки","Рибосомы участвуют в синтезе белка. Митохондрии обеспечивают клеточное дыхание и синтез АТФ. ЭПС участвует в синтезе и транспорте веществ. Комплекс Гольджи модифицирует, сортирует и упаковывает вещества. Лизосомы содержат ферменты для внутриклеточного переваривания."],
+   ["Растительная клетка","Для растительных клеток характерны клеточная стенка из целлюлозы, пластиды и крупная центральная вакуоль. Хлоропласты обеспечивают фотосинтез."]
+  ]
+ },
+ "Митоз и мейоз": {
+  intro:"Митоз обеспечивает рост, развитие и восстановление тканей. Мейоз связан с образованием половых клеток и уменьшением числа хромосом вдвое.",
+  sections:[
+   ["Интерфаза","Перед делением клетка проходит интерфазу. В период S происходит репликация ДНК. После репликации каждая хромосома состоит из двух сестринских хроматид."],
+   ["Митоз","Митоз включает профазу, метафазу, анафазу и телофазу. В метафазе хромосомы располагаются в экваториальной плоскости. В анафазе сестринские хроматиды расходятся к противоположным полюсам."],
+   ["Мейоз","Мейоз состоит из двух последовательных делений — мейоза I и мейоза II. В профазе I происходят конъюгация гомологичных хромосом и кроссинговер. После мейоза из одной диплоидной клетки обычно образуются четыре гаплоидные клетки."],
+   ["Главное отличие","При митозе число хромосом обычно сохраняется, а дочерние клетки генетически близки исходной. При мейозе число хромосом уменьшается вдвое и создаётся генетическое разнообразие."]
+  ]
+ },
+ "Размножение организмов": {
+  intro:"Размножение обеспечивает воспроизведение организмов и передачу наследственной информации следующим поколениям.",
+  sections:[
+   ["Бесполое размножение","В бесполом размножении участвует обычно один организм, а гаметы не сливаются. Основные формы: деление, почкование, фрагментация, спорообразование и вегетативное размножение."],
+   ["Половое размножение","При половом размножении генетический материал потомка формируется с участием половых клеток. Слияние гамет называется оплодотворением, а образовавшаяся клетка — зиготой."],
+   ["Гаметы и зигота","Гаметы обычно имеют гаплоидный набор хромосом. После оплодотворения восстанавливается диплоидный набор, характерный для вида."],
+   ["Партеногенез","Партеногенез — развитие организма из яйцеклетки без оплодотворения. Он является особой формой размножения и встречается у разных групп животных."]
+  ]
+ }
+};
+
+function openModule(name){
+ document.getElementById("home").classList.add("hidden");
+ document.getElementById("quiz").classList.add("hidden");
+ document.getElementById("result").classList.add("hidden");
+ let old=document.getElementById("module"); if(old) old.remove();
+ const sec=document.createElement("section"); sec.id="module";
+ let content=`<div class="card"><button class="secondary" onclick="goHome()">← Все темы</button><span class="badge" style="margin-left:8px">Теория</span><h1 style="margin-top:18px">${name}</h1><p class="muted">${theory[name].intro}</p></div>`;
+ theory[name].sections.forEach((s,i)=>content+=`<div class="card"><h2>${i+1}. ${s[0]}</h2><p style="line-height:1.7">${s[1]}</p></div>`);
+ content+=`<div class="card" style="text-align:center"><h2>Готов проверить знания?</h2><p class="muted">После изучения теории пройди тест по этой теме.</p><button class="primary" onclick="start('${name}')">Начать тест</button></div>`;
+ sec.innerHTML=content; document.querySelector("main").appendChild(sec);
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+let currentTest=[], currentName="", answers=[], index=0, time=600, interval=null;
+
+const topics=document.getElementById("topics");
+Object.keys(tests).forEach(name=>{
+ const div=document.createElement("button"); div.className="topic";
+ div.innerHTML=`<b>${name}</b><span class="muted">${tests[name].length} вопросов • автоматическая проверка</span>`;
+ div.onclick=()=>start(name); topics.appendChild(div);
+});
+
+function start(name){
+ currentName=name; currentTest=tests[name]; answers=Array(currentTest.length).fill(null); index=0; time=600;
+ document.getElementById("home").classList.add("hidden"); document.getElementById("result").classList.add("hidden"); document.getElementById("quiz").classList.remove("hidden");
+ document.getElementById("quizTitle").textContent=name;
+ clearInterval(interval); interval=setInterval(tick,1000); render();
+}
+function tick(){
+ time--; if(time<0){finish();return}
+ let m=Math.floor(time/60),s=String(time%60).padStart(2,"0"); document.getElementById("timer").textContent=`${m}:${s}`;
+}
+function render(){
+ const q=currentTest[index]; document.getElementById("counter").textContent=`Вопрос ${index+1} из ${currentTest.length}`;
+ document.getElementById("bar").style.width=((index+1)/currentTest.length*100)+"%";
+ document.getElementById("question").textContent=q[0];
+ const box=document.getElementById("options"); box.innerHTML="";
+ q[1].forEach((x,i)=>{
+  const b=document.createElement("button"); b.className="option"+(answers[index]===i?" selected":""); b.textContent=x;
+  b.onclick=()=>{answers[index]=i;render()}; box.appendChild(b);
+ });
+ document.getElementById("prev").disabled=index===0;
+ document.getElementById("next").textContent=index===currentTest.length-1?"Завершить":"Далее";
+}
+document.getElementById("prev").onclick=()=>{if(index>0){index--;render()}};
+document.getElementById("next").onclick=()=>{if(index<currentTest.length-1){index++;render()}else finish()};
+
+function finish(){
+ clearInterval(interval);
+ let correct=currentTest.reduce((n,q,i)=>n+(answers[i]===q[2]?1:0),0);
+ let pct=Math.round(correct/currentTest.length*100);
+ document.getElementById("quiz").classList.add("hidden"); document.getElementById("result").classList.remove("hidden");
+ document.getElementById("resultTitle").textContent=currentName;
+ document.getElementById("score").textContent=`${correct} / ${currentTest.length}`;
+ document.getElementById("resultText").textContent=`Результат: ${pct}%. ${pct>=90?"Отличная работа!":pct>=70?"Хороший результат.": "Повтори тему и попробуй ещё раз."}`;
+ const review=document.getElementById("review"); review.innerHTML="";
+ currentTest.forEach((q,i)=>{
+  const ok=answers[i]===q[2]; const div=document.createElement("div"); div.className="review-item";
+  div.innerHTML=`<b>${i+1}. ${q[0]}</b><br><span style="color:${ok?'#248653':'#c23d49'}">${ok?'Ваш ответ верный':'Ваш ответ: '+(answers[i]===null?'не выбран':q[1][answers[i]])}</span><br><span class="muted">Правильный ответ: ${q[1][q[2]]}</span>`;
+  review.appendChild(div);
+ });
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function restart(){start(currentName)}
+function goHome(){
+ clearInterval(interval); document.getElementById("result").classList.add("hidden"); document.getElementById("home").classList.remove("hidden"); window.scrollTo({top:0,behavior:"smooth"});
+}
+</script>
+</body>
+</html>
